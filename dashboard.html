@@ -1,197 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InterviewAI | Professional Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --bg: #0b1120; --sidebar: #161e2d; --accent: #38bdf8;
-            --card: #1e293b; --text-main: #f1f5f9; --text-dim: #94a3b8;
-            --success: #10b981; --danger: #f43f5e;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeForge — Build. Score. Land.</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d0d0d; --paper: #f5f0e8; --cream: #faf7f2;
+    --accent: #c8401a; --gold: #d4a853; --sage: #5a7a5e;
+    --slate: #3d4f5c; --muted: #8a8278; --border: #d8d0c4;
+    --white: #ffffff; --shadow: rgba(13,13,13,0.12);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); min-height:100vh; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background: var(--bg); color: var(--text-main); display: flex; min-height: 100vh; }
+  nav { display:flex; align-items:center; justify-content:space-between; padding:1.2rem 3rem; background:var(--ink); position:sticky; top:0; z-index:100; }
+  .logo { font-family:'Playfair Display',serif; font-size:1.5rem; color:var(--paper); letter-spacing:-.02em; }
+  .logo span { color:var(--accent); }
+  .nav-tabs { display:flex; gap:.5rem; }
+  .nav-tab { padding:.5rem 1.2rem; background:transparent; border:1px solid #333; color:#aaa; border-radius:4px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:.85rem; transition:all .2s; }
+  .nav-tab.active, .nav-tab:hover { background:var(--accent); color:var(--white); border-color:var(--accent); }
 
-        /* Sidebar Navigation */
-        .sidebar { width: 260px; background: var(--sidebar); padding: 30px 20px; display: flex; flex-direction: column; border-right: 1px solid #2d3748; position: fixed; height: 100vh; }
-        .logo { font-size: 1.5rem; font-weight: 700; color: var(--accent); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-menu { list-style: none; flex-grow: 1; }
-        .nav-item { padding: 12px 15px; border-radius: 10px; cursor: pointer; color: var(--text-dim); transition: 0.3s; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
-        .nav-item:hover, .nav-item.active { background: #2d3748; color: var(--accent); }
+  .hero { padding:5rem 3rem 3rem; display:grid; grid-template-columns:1fr 1fr; gap:4rem; align-items:center; max-width:1200px; margin:0 auto; }
+  .hero-text h1 { font-family:'Playfair Display',serif; font-size:clamp(2.5rem,5vw,4rem); line-height:1.1; margin-bottom:1rem; }
+  .hero-text h1 em { color:var(--accent); font-style:normal; }
+  .hero-text p { color:var(--muted); line-height:1.7; max-width:420px; margin-bottom:2rem; }
+  .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.8rem 1.8rem; border-radius:4px; font-weight:500; cursor:pointer; transition:all .2s; font-family:'DM Sans',sans-serif; font-size:.95rem; border:none; text-decoration:none;}
+  .btn-primary { background:var(--accent); color:var(--white); }
+  .btn-primary:hover { background:#a83415; transform:translateY(-1px); box-shadow:0 6px 20px rgba(200,64,26,.3); }
+  .btn-outline { background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
+  .btn-outline:hover { background:var(--ink); color:var(--white); }
+  .hero-card { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:2rem; box-shadow:0 20px 60px var(--shadow); }
+  
+  .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+  .stat { padding:1rem; background:var(--cream); border-radius:6px; text-align:center; }
+  .stat-num { font-family:'Playfair Display',serif; font-size:2rem; color:var(--accent); }
+  .stat-label { font-size:.8rem; color:var(--muted); margin-top:.2rem; }
 
-        /* Logout Section in Sidebar */
-        .sidebar-footer { margin-top: auto; padding: 10px 0; border-top: 1px solid #334155; }
-        .btn-logout { width: 100%; padding: 12px; background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-logout:hover { background: var(--danger); color: white; }
+  .section { max-width:1200px; margin:0 auto; padding:4rem 3rem; }
+  .section-title { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:.5rem; }
+  .section-sub { color:var(--muted); margin-bottom:2.5rem; }
 
-        /* Main Content Area */
-        .main-content { margin-left: 260px; flex-grow: 1; padding: 40px; width: calc(100% - 260px); }
-        
-        /* Top Header */
-        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: var(--sidebar); padding: 20px; border-radius: 15px; border: 1px solid #2d3748; }
-        .user-profile { display: flex; align-items: center; gap: 15px; }
-        .user-profile img { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
 
-        /* Dashboard Cards & Grid */
-        .section-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .feature-card { background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid #334155; transition: 0.3s; }
-        .feature-img { width: 100%; height: 160px; object-fit: cover; }
-        .feature-body { padding: 20px; }
-        .feature-body h3 { color: var(--accent); margin-bottom: 10px; }
-        .feature-body p { font-size: 0.85rem; color: var(--text-dim); margin-bottom: 15px; }
+  /* DASHBOARD SPECIFIC */
+  .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;}
+  .dash-card { background: var(--white); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+  .dash-value { font-size: 2.5rem; font-family: 'Playfair Display'; color: var(--accent); display: block; }
+  .dash-label { font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Live Performance Section */
-        .dashboard-container { background: var(--sidebar); padding: 30px; border-radius: 20px; border: 1px solid #2d3748; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px; }
-        .stat-box { background: #0b1120; padding: 20px; border-radius: 15px; text-align: center; border: 1px solid #334155; }
-        .stat-box h2 { color: var(--accent); font-size: 1.8rem; }
+  .builder-grid { display:grid; grid-template-columns:1fr 1.2fr; gap:2rem; }
+  .form-panel { background:var(--white); border:1px solid var(--border); border-radius:8px; padding:1.8rem; height: fit-content; }
+  .form-section { margin-bottom:1.5rem; }
+  .form-section h3 { font-size:.85rem; font-weight:600; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+  .form-section h3::before { content:''; width:3px; height:14px; background:var(--accent); border-radius:2px; }
+  .form-row { display:grid; grid-template-columns:1fr 1fr; gap:.8rem; margin-bottom:.8rem; }
+  .form-row.full { grid-template-columns:1fr; }
+  input, textarea { width:100%; padding:.65rem .9rem; border:1px solid var(--border); border-radius:4px; font-family:'DM Sans',sans-serif; font-size:.9rem; background:var(--cream); color:var(--ink); transition:border-color .2s; }
+  input:focus, textarea:focus { outline:none; border-color:var(--accent); background:var(--white); }
+  textarea { resize:vertical; min-height:80px; }
+  label { font-size:.8rem; color:var(--muted); display:block; margin-bottom:.3rem; }
+  .add-btn { display:inline-flex; align-items:center; gap:.4rem; font-size:.82rem; color:var(--accent); cursor:pointer; background:none; border:1px dashed var(--accent); padding:.4rem .8rem; border-radius:4px; margin-top:.5rem; font-family:'DM Sans',sans-serif; }
+  .add-btn:hover { background:rgba(200,64,26,.06); }
 
-        .chart-box { height: 350px; position: relative; width: 100%; background: #0b1120; padding: 20px; border-radius: 15px; border: 1px solid #334155; }
-        .btn-action { display: block; width: 100%; padding: 12px; background: var(--accent); color: var(--bg); text-align: center; border-radius: 8px; font-weight: 700; text-decoration: none; }
-    </style>
+  .preview-panel { position:sticky; top:100px; height: fit-content; }
+  .preview-controls { display:flex; gap:.5rem; margin-bottom:.8rem; }
+  .preview-btn { padding:.4rem .9rem; font-size:.8rem; background:var(--white); border:1px solid var(--border); border-radius:4px; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .preview-btn.active { background:var(--ink); color:var(--white); border-color:var(--ink); }
+  .resume-preview { background:var(--white); border:1px solid var(--border); border-radius:8px; min-height:842px; overflow:hidden; box-shadow:0 10px 40px var(--shadow); }
+  .resume-page { padding:2.5rem; font-family:'DM Sans',sans-serif; font-size:.82rem; line-height:1.5; height:100%; }
+
+  /* TEMPLATE STYLES */
+  .tpl-classic .resume-name { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:.2rem; }
+  .tpl-classic .resume-title { color:var(--accent); font-size:.9rem; margin-bottom:.8rem; }
+  .tpl-classic .resume-contact { display:flex; gap:1.5rem; flex-wrap:wrap; font-size:.78rem; color:var(--muted); margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px solid var(--ink); }
+  .tpl-classic .sec-head { font-size:.75rem; text-transform:uppercase; letter-spacing:.1em; font-weight:700; margin:1.2rem 0 .6rem; border-bottom:1px solid var(--border); padding-bottom:.3rem; }
+
+  .tpl-modern-wrap { display:grid; grid-template-columns:35% 65%; min-height:842px; }
+  .tpl-modern-wrap .sidebar { background:var(--slate); color:var(--white); padding:2rem 1.5rem; }
+  .tpl-modern-wrap .main { padding:2rem 1.8rem; background: var(--white); }
+  .tpl-modern-wrap .resume-name { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:.2rem; }
+  .tpl-modern-wrap .resume-title { color:var(--gold); font-size:.82rem; margin-bottom:1.2rem; }
+  .tpl-modern-wrap .sec-head { font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--gold); border-bottom:1px solid rgba(255,255,255,.15); padding-bottom:.3rem; margin:1rem 0 .6rem; }
+
+  .tpl-minimal .resume-name { font-family:'DM Mono',monospace; font-size:1.6rem; font-weight:500; letter-spacing:-.03em; }
+  .tpl-minimal .sec-head { font-family:'DM Mono',monospace; font-size:.72rem; color:var(--muted); margin:1.2rem 0 .5rem; text-transform: lowercase; }
+
+  /* SCORE RESULTS */
+  .analyzing { display:none; text-align:center; padding:2rem; }
+  .analyzing.show { display:block; }
+  .score-results { display:none; margin-top:2rem; }
+  .score-results.show { display:block; }
+  .score-header { display:flex; align-items:center; gap:2rem; background:var(--white); border:1px solid var(--border); border-radius:8px; padding:2rem; margin-bottom:1.5rem; }
+  .score-num { font-family:'Playfair Display',serif; font-size:2.5rem; color:var(--accent); }
+  .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .8s linear infinite; margin:0 auto 1rem; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  @media print {
+    nav, .hero, .divider, .form-panel, .preview-controls, .nav-tabs { display: none !important; }
+    body { background: white; }
+    .section { padding: 0; margin: 0; max-width: 100%; }
+    .builder-grid { display: block; }
+    .resume-preview { border: none; box-shadow: none; width: 100%; }
+  }
+</style>
 </head>
 <body>
 
-    <nav class="sidebar">
-        <div class="logo"><span>🤖</span> InterviewAI</div>
-        <ul class="nav-menu">
-            <li class="nav-item active" onclick="location.href='index.html'">🏠 Dashboard</li>
-            <li class="nav-item" onclick="location.href='inter.html'">🎤 AI Interview</li>
-            <li class="nav-item" onclick="location.href='aptitude1.html'">📝 Aptitude Test</li>
-            <li class="nav-item" onclick="location.href='resume.html'">📄 Resume Builder</li>
-            <li class="nav-item" onclick="location.href='insight.html'">📊 Score my resume</li>
-        </ul>
+<nav>
+  <div class="logo">Resume<span>Forge</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="dashboard">🏠 Dashboard</button>
+    <button class="nav-tab" data-tab="builder">✏️ Builder</button>
+    <button class="nav-tab" data-tab="score">📊 Score</button>
+  </div>
+</nav>
+
+<div id="tab-dashboard" class="tab-content active section">
+    <div class="section-title">Professional Dashboard</div>
+    <div class="section-sub">Real-time tracking of your placement readiness.</div>
+    
+    <div class="dashboard-grid">
+        <div class="dash-card">
+            <span class="dash-value" id="dash-resume-score">0</span>
+            <span class="dash-label">Resume Score</span>
+        </div>
+        <div class="dash-card">
+            <span class="dash-value" id="dash-aptitude-score">81%</span>
+            <span class="dash-label">Aptitude Score</span>
+        </div>
+        <div class="dash-card">
+            <span class="dash-value" id="dash-rank">Top 8%</span>
+            <span class="dash-label">Global Rank</span>
+        </div>
+    </div>
+
+    <div class="hero-card" style="margin-bottom: 2rem;">
+        <h3>Ready to improve?</h3>
+        <p>Your current resume score is updated based on your latest scan.</p>
+        <button class="btn btn-primary" style="margin-top: 10px;" onclick="showTab('score')">Rescan Resume</button>
+    </div>
+</div>
+
+<div id="tab-builder" class="tab-content section">
+  <div class="section-title">Resume Builder</div>
+  <div class="builder-grid">
+    <div class="form-panel">
+      <div class="form-section">
+        <h3>Personal Info</h3>
+        <div class="form-row">
+          <div><label>First Name</label><input id="fname" type="text" placeholder="Jane"></div>
+          <div><label>Last Name</label><input id="lname" type="text" placeholder="Doe"></div>
+        </div>
+        <div class="form-row full"><label>Job Title</label><input id="jobtitle" type="text" placeholder="Software Engineer"></div>
+        <div class="form-row">
+          <div><label>Email</label><input id="email" type="email" placeholder="jane@example.com"></div>
+          <div><label>Phone</label><input id="phone" type="text" placeholder="+1 234 567"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>Summary</h3>
+        <textarea id="summary" placeholder="Brief professional overview..."></textarea>
+      </div>
+
+      <div class="form-section">
+        <h3>Experience</h3>
+        <div id="exp-inputs">
+            <div class="form-row">
+                <input id="exp-title" type="text" placeholder="Title">
+                <input id="exp-company" type="text" placeholder="Company">
+            </div>
+            <textarea id="exp-desc" placeholder="Responsibilities..."></textarea>
+        </div>
+        <button class="add-btn" id="btn-add-exp">+ Add Experience</button>
+        <div id="exp-list" style="margin-top: 10px;"></div>
+      </div>
+
+      <div style="margin-top:2rem; display:flex; gap:1rem;">
+        <button class="btn btn-primary" id="btn-download">⬇ Download PDF</button>
+        <button class="btn btn-outline" id="btn-go-score">📊 Score This Resume</button>
+      </div>
+    </div>
+
+    <div class="preview-panel">
+      <div class="preview-controls">
+        <button class="preview-btn active" data-tpl="classic">Classic</button>
+        <button class="preview-btn" data-tpl="modern">Modern</button>
+        <button class="preview-btn" data-tpl="minimal">Minimal</button>
+      </div>
+      <div class="resume-preview" id="resume-preview"></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab-score" class="tab-content section">
+  <div class="section-title">Resume Scorer</div>
+  <textarea id="paste-resume" placeholder="Paste your resume text here to analyze..." style="width:100%; min-height:200px; margin-bottom:1rem;"></textarea>
+  <button class="btn btn-primary" id="btn-score">📊 Analyze & Score</button>
+
+  <div class="analyzing" id="analyzing">
+    <div class="spinner"></div>
+    <p>AI is scanning for keywords and formatting...</p>
+  </div>
+
+  <div class="score-results" id="score-results">
+    <div class="score-header">
+        <div class="score-num" id="score-display">0</div>
+        <div>
+            <h3 id="score-verdict">Good Effort!</h3>
+            <p id="score-summary-text">Your resume is being processed.</p>
+        </div>
+    </div>
+    <button class="btn btn-outline" onclick="showTab('dashboard')">View on Dashboard</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let currentTpl = 'classic';
+    let experiences = [];
+
+    // --- SYNC SYSTEM ---
+    function updateDashboard() {
+        const savedScore = localStorage.getItem('userResumeScore') || 0;
+        const savedAptitude = localStorage.getItem('userAptitudeScore') || "81%";
         
-        <div class="sidebar-footer">
-            <button class="btn-logout" onclick="handleLogout()">
-                <span>🚪</span> Logout
-            </button>
-        </div>
-    </nav>
+        document.getElementById('dash-resume-score').innerText = savedScore;
+        document.getElementById('dash-aptitude-score').innerText = savedAptitude;
+        
+        // Dynamic feedback based on score
+        if(savedScore > 80) document.getElementById('dash-rank').innerText = "Top 3%";
+        else if(savedScore > 50) document.getElementById('dash-rank').innerText = "Top 15%";
+    }
 
-    <main class="main-content">
-        <header class="top-header">
-            <div>
-                <h2 id="welcome-msg">Welcome Back, User</h2>
-                <p style="color: var(--text-dim); font-size: 0.9rem;">ARE YOU READY?</p>
-            </div>
-            <div class="user-profile">
-                <div style="text-align: right;">
-                    <p style="font-weight: 600;" id="user-display-name">Loading...</p>
-                    <p style="font-size: 0.75rem; color: var(--text-dim);">welcome</p>
+    // --- TAB SYSTEM ---
+    window.showTab = function(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-' + tabId).classList.add('active');
+        const navBtn = document.querySelector(`.nav-tab[data-tab="${tabId}"]`);
+        if(navBtn) navBtn.classList.add('active');
+        
+        if(tabId === 'dashboard') updateDashboard();
+    };
+
+    document.querySelectorAll('.nav-tab').forEach(btn => {
+        btn.addEventListener('click', () => showTab(btn.dataset.tab));
+    });
+
+    // --- BUILDER LOGIC ---
+    function renderPreview() {
+        const data = {
+            name: (document.getElementById('fname').value + ' ' + document.getElementById('lname').value).trim() || 'John Doe',
+            title: document.getElementById('jobtitle').value || 'Professional Title',
+            email: document.getElementById('email').value || 'hello@reallygreatsite.com',
+            summary: document.getElementById('summary').value || 'Enter your professional summary here...',
+            experiences: experiences
+        };
+
+        const preview = document.getElementById('resume-preview');
+        
+        let html = '';
+        if (currentTpl === 'classic') {
+            html = `<div class="resume-page tpl-classic">
+                <div class="resume-name">${data.name}</div>
+                <div class="resume-title">${data.title}</div>
+                <div class="resume-contact">${data.email}</div>
+                <div class="sec-head">Summary</div><p>${data.summary}</p>
+                <div class="sec-head">Experience</div>
+                ${data.experiences.map(e => `<div><strong>${e.title}</strong> at ${e.company}<br>${e.desc}</div>`).join('')}
+            </div>`;
+        } else if (currentTpl === 'modern') {
+            html = `<div class="tpl-modern-wrap">
+                <div class="sidebar">
+                    <div class="resume-name" style="color:white">${data.name}</div>
+                    <div class="resume-title">${data.title}</div>
+                    <div class="sec-head">Contact</div><div style="font-size:0.7rem">${data.email}</div>
                 </div>
-                <img src="https://i.pravatar.cc/150?u=auth_user" alt="Profile">
-            </div>
-        </header>
-
-        <div class="section-grid">
-            <div class="feature-card">
-                <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=400" class="feature-img">
-                <div class="feature-body">
-                    <h3>Mock Interview</h3>
-                    <p>Track technical accuracy and eye contact in real-time.</p>
-                    <a href="inter.html" class="btn-action">Start Practice</a>
+                <div class="main">
+                    <div class="sec-head" style="color:var(--accent)">Experience</div>
+                    ${data.experiences.map(e => `<div style="margin-bottom:10px"><strong>${e.title}</strong><br><small>${e.company}</small><p>${e.desc}</p></div>`).join('')}
                 </div>
-            </div>
+            </div>`;
+        } else {
+            html = `<div class="resume-page tpl-minimal">
+                <div class="resume-name">${data.name.toUpperCase()}</div>
+                <div class="sec-head">// summary</div><p>${data.summary}</p>
+                <div class="sec-head">// experience</div>
+                ${data.experiences.map(e => `<p>• ${e.title} / ${e.company}<br>${e.desc}</p>`).join('')}
+            </div>`;
+        }
+        preview.innerHTML = html;
+    }
 
-            <div class="feature-card">
-                <img src="https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=400" class="feature-img">
-                <div class="feature-body">
-                    <h3>Resume Scorer</h3>
-                    <p>Keyword-Frequency analysis for Tier-1 placements.</p>
-                    <a href="insight.html" class="btn-action">Check Score</a>
-                </div>
-            </div>
+    // --- ADD EXPERIENCE ---
+    document.getElementById('btn-add-exp').addEventListener('click', () => {
+        const title = document.getElementById('exp-title').value;
+        const company = document.getElementById('exp-company').value;
+        const desc = document.getElementById('exp-desc').value;
+        if(!title || !company) return alert("Please fill Title and Company");
+        experiences.push({ title, company, desc });
+        document.getElementById('exp-title').value = '';
+        document.getElementById('exp-company').value = '';
+        document.getElementById('exp-desc').value = '';
+        renderPreview();
+    });
 
-            <div class="feature-card">
-                <img src="https://images.unsplash.com/photo-1454165833767-027ffea9e77b?auto=format&fit=crop&w=400" class="feature-img">
-                <div class="feature-body">
-                    <h3>Aptitude Test</h3>
-                    <p>500+ quantitative problems for placement exams.</p>
-                    <a href="aptitude1.html" class="btn-action">Take Test</a>
-                </div>
-            </div>
-        </div>
+    // --- TEMPLATE SWITCHER ---
+    document.querySelectorAll('.preview-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            currentTpl = btn.dataset.tpl;
+            document.querySelectorAll('.preview-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderPreview();
+        });
+    });
 
-        <div class="dashboard-container">
-            <h3 style="margin-bottom: 20px; border-left: 4px solid var(--accent); padding-left: 10px;">Performance Growth</h3>
-            <div class="stats-grid">
-                <div class="stat-box"><h2>18</h2><p>Sessions</p></div>
-                <div class="stat-box"><h2>88%</h2><p>Confidence</p></div>
-                <div class="stat-box"><h2>81%</h2><p>Accuracy</p></div>
-                <div class="stat-box"><h2>Top 8%</h2><p>Global Rank</p></div>
-            </div>
-            <div class="chart-box">
-                <canvas id="performanceChart"></canvas>
-            </div>
-        </div>
-    </main>
+    // --- DOWNLOAD ---
+    document.getElementById('btn-download').addEventListener('click', () => { window.print(); });
 
-    <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+    // --- SCORING ENGINE ---
+    function calculateScore(text) {
+        let score = 40; 
+        if (text.length > 200) score += 20;
+        if (text.includes('@')) score += 10;
+        if (text.toLowerCase().includes('python') || text.toLowerCase().includes('react')) score += 15;
+        if (text.toLowerCase().includes('achieved') || text.toLowerCase().includes('led')) score += 15;
+        return Math.min(score, 100);
+    }
 
-    // MUST MATCH THE CONFIG IN INDEX.HTML
-     const firebaseConfig = {
-    apiKey: "AIzaSyBnDGk8aM_TTN3jgGJv1GgYFVXSyX3Ei2I",
-    authDomain: "new-app-faeb5.firebaseapp.com",
-    projectId: "new-app-faeb5",
-    storageBucket: "new-app-faeb5.firebasestorage.app",
-    messagingSenderId: "228503835659",
-    appId: "1:228503835659:web:c91d14cf3eaa73bb71e30e",
-    measurementId: "G-BJXM7CSVWZ"
-  };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    document.getElementById('btn-score').addEventListener('click', () => {
+        const text = document.getElementById('paste-resume').value;
+        if(!text) return alert("Please paste text first!");
 
-        // 2. MONITOR AUTH STATE
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Determine name: Google display name OR part of email
-                const displayName = user.displayName || user.email.split('@')[0];
-                
-                // Update UI
-                document.getElementById('welcome-msg').innerText = `Welcome Back, ${displayName}`;
-                document.getElementById('user-display-name').innerText = displayName;
-                
-                // If user has a Google photo, show it
-                if(user.photoURL) {
-                    document.getElementById('user-photo').src = user.photoURL;
-                }
+        document.getElementById('analyzing').style.display = 'block';
+        document.getElementById('score-results').style.display = 'none';
+
+        setTimeout(() => {
+            const score = calculateScore(text);
+            document.getElementById('analyzing').style.display = 'none';
+            document.getElementById('score-results').style.display = 'block';
+            document.getElementById('score-display').innerText = score;
+            
+            // SAVE TO STORAGE
+            localStorage.setItem('userResumeScore', score);
+            
+            if(score > 80) {
+                document.getElementById('score-verdict').innerText = "Excellent!";
+                document.getElementById('score-summary-text').innerText = "Highly optimized for ATS.";
             } else {
-                // No user logged in - redirect to login page
-                window.location.href = "index.html"; 
+                document.getElementById('score-verdict').innerText = "Needs Improvement";
+                document.getElementById('score-summary-text').innerText = "Add more technical keywords.";
             }
-        });
+        }, 1500);
+    });
 
-        // 3. LOGOUT LOGIC
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            }).catch((err) => console.error("Logout failed", err));
-        });
+    document.getElementById('btn-go-score').addEventListener('click', () => {
+        document.getElementById('paste-resume').value = document.getElementById('resume-preview').innerText;
+        showTab('score');
+    });
 
-        // 4. CHART.JS
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Performance Index',
-                    data: [65, 72, 68, 85, 82, 91],
-                    borderColor: '#38bdf8',
-                    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-    </script>
+    // Live update
+    ['fname', 'lname', 'jobtitle', 'email', 'summary'].forEach(id => {
+        document.getElementById(id).addEventListener('input', renderPreview);
+    });
+
+    // Initialize Dashboard
+    updateDashboard();
+    renderPreview();
+});
+</script>
 </body>
 </html>

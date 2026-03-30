@@ -1,58 +1,63 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>InterviewAI | Login & Register</title>
     <link rel="stylesheet" href="page_style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
 </head>
 <body>
+
     <form class="login_form">
         <h1 class="login_title">Login</h1>
 
         <div class="input_box">
             <i class="fa-solid fa-user"></i>
-            <input type="text" id="email" placeholder="Username">
+            <input type="email" id="email" placeholder="Email Address" required>
         </div>
 
         <div class="input_box">
             <i class="fa-solid fa-lock"></i>
-            <input type="password" id="password" placeholder="Password">
+            <input type="password" id="password" placeholder="Password" required>
         </div>
 
         <div class="remember_forget_box">
             <label for="remember">
-                <input type="checkbox" id="remember">
-                Remember
+                <input type="checkbox" id="remember"> Remember Me
             </label>
-            <a href="#">Forgot Password</a>
+            <a href="#">Forgot Password?</a>
         </div>
 
-        <button class="login_btn">Login</button>
+        <button type="submit" class="login_btn" id="submitBtn">Login</button>
+
         <p class="register">
-            Don't have an account?
-            <a href="#">Register</a>
+            <span id="toggleText">Don't have an account?</span>
+            <a href="#" id="toggleLink">Register</a>
         </p>
 
         <div class="google_signin_box">
-            <button id="googleSignInBtn">
-                 <i class="fa-brands fa-google"></i> Sign in with Google
+            <button type="button" id="googleSignInBtn">
+                <i class="fa-brands fa-google"></i> Sign in with Google
             </button>
         </div>
 
-        
         <div class="messege_box"></div>
-
     </form>
 
-   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword, 
+            signInWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
 
-    // REPLACE THIS WITH YOUR ACTUAL FIREBASE CONFIG
-    const firebaseConfig = {
+        // --- PASTE YOUR ACTUAL FIREBASE CONFIG HERE ---
+        const firebaseConfig = {
     apiKey: "AIzaSyBnDGk8aM_TTN3jgGJv1GgYFVXSyX3Ei2I",
     authDomain: "new-app-faeb5.firebaseapp.com",
     projectId: "new-app-faeb5",
@@ -62,47 +67,94 @@
     measurementId: "G-BJXM7CSVWZ"
   };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
 
-    const btn = document.querySelector(".login_btn");
-    const googleBtn = document.getElementById("googleSignInBtn");
-    const messege = document.querySelector(".messege_box");
+        // Elements
+        const submitBtn = document.getElementById("submitBtn");
+        const toggleLink = document.getElementById("toggleLink");
+        const toggleText = document.getElementById("toggleText");
+        const loginTitle = document.querySelector(".login_title");
+        const messege = document.querySelector(".messege_box");
+        const googleBtn = document.getElementById("googleSignInBtn");
 
-    // Google Sign In
-    googleBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        signInWithPopup(auth, provider)
-            .then(() => {
-                window.location.href = "dashboard.html";
-            }).catch((error) => {
-                messege.textContent = "Error: " + error.message;
-                messege.classList.add("error");
-            });
-    });
+        let isRegisterMode = false;
 
-    // Email/Password Signup
-    btn.addEventListener("click", (e) => {
-        e.preventDefault();
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        // --- TOGGLE LOGIN/REGISTER UI ---
+        toggleLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            isRegisterMode = !isRegisterMode;
+            messege.textContent = ""; // Clear previous messages
 
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Since email signup doesn't have a name, we use the email prefix
-                const displayName = email.split('@')[0];
-                return updateProfile(userCredential.user, { displayName: displayName });
-            })
-            .then(() => {
-                window.location.href = "dashboard.html";
-            })
-            .catch((error) => {
-                messege.classList.add("error");
-                if(error.code === "auth/email-already-in-use") messege.textContent = "Email already exists!";
-                else messege.textContent = error.message;
-            });
-    });
-</script>
+            if (isRegisterMode) {
+                loginTitle.textContent = "Register";
+                submitBtn.textContent = "Create Account";
+                toggleText.textContent = "Already have an account?";
+                toggleLink.textContent = "Login";
+            } else {
+                loginTitle.textContent = "Login";
+                submitBtn.textContent = "Login";
+                toggleText.textContent = "Don't have an account?";
+                toggleLink.textContent = "Register";
+            }
+        });
+
+        // --- MAIN BUTTON CLICK (LOGIN OR REGISTER) ---
+        submitBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            if (!email || !password) {
+                showMessage("Please fill in all fields", "error");
+                return;
+            }
+
+            try {
+                if (isRegisterMode) {
+                    // REGISTER NEW ACCOUNT
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const displayName = email.split('@')[0];
+                    await updateProfile(userCredential.user, { displayName: displayName });
+                    
+                    showMessage("Account Created! Redirecting...", "created");
+                    setTimeout(() => { window.location.href = "dashboard.html"; }, 1500);
+                } else {
+                    // LOGIN EXISTING ACCOUNT
+                    await signInWithEmailAndPassword(auth, email, password);
+                    window.location.href = "dashboard.html";
+                }
+            } catch (error) {
+                handleAuthError(error);
+            }
+        });
+
+        // --- GOOGLE SIGN IN ---
+        googleBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            signInWithPopup(auth, provider)
+                .then(() => { window.location.href = "dashboard.html"; })
+                .catch((err) => showMessage("Google Login Failed", "error"));
+        });
+
+        // Helper: Show Messages
+        function showMessage(text, type) {
+            messege.textContent = text;
+            messege.className = "messege_box " + type;
+        }
+
+        // Helper: Handle Firebase Errors
+        function handleAuthError(error) {
+            console.error(error.code);
+            let msg = "An error occurred.";
+            if (error.code === "auth/email-already-in-use") msg = "This email is already registered!";
+            if (error.code === "auth/invalid-credential") msg = "Wrong email or password.";
+            if (error.code === "auth/weak-password") msg = "Password should be at least 6 characters.";
+            if (error.code === "auth/invalid-email") msg = "Please enter a valid email address.";
+            
+            showMessage(msg, "error");
+        }
+    </script>
 </body>
 </html>

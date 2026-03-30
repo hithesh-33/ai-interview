@@ -1,123 +1,222 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>AI Aptitude Test</title>
-  <style>
-    body {
-      font-family: Poppins;
-      background: #f5f6fa;
-      padding: 20px;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InterviewAI | Aptitude Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Modern Dark Theme CSS */
+        :root {
+            --bg: #0b1120;
+            --sidebar: #161e2d;
+            --accent: #38bdf8;
+            --card: #1e293b;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --success: #10b981;
+            --danger: #f43f5e;
+        }
 
-    .container {
-      max-width: 800px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-    }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            padding: 40px 20px; 
+            line-height: 1.6;
+        }
 
-    button {
-      background: #6c5ce7;
-      color: white;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      cursor: pointer;
-    }
+        .container { 
+            max-width: 900px; 
+            margin: auto; 
+            background: var(--sidebar); 
+            padding: 30px; 
+            border-radius: 20px; 
+            border: 1px solid #2d3748;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
 
-    .question {
-      margin-bottom: 20px;
-      padding: 15px;
-      background: #f9f9f9;
-      border-radius: 10px;
-    }
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #2d3748;
+            padding-bottom: 20px;
+        }
 
-    .answer {
-      color: green;
-      margin-top: 10px;
-    }
+        h2 { color: var(--accent); font-weight: 600; }
 
-    .explanation {
-      color: #555;
-      font-size: 14px;
-    }
-  </style>
+        #timer {
+            background: rgba(244, 63, 94, 0.1);
+            color: var(--danger);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid var(--danger);
+            font-weight: 600;
+        }
+
+        button { 
+            background: var(--accent); 
+            color: var(--bg); 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 10px; 
+            font-weight: 600;
+            cursor: pointer; 
+            transition: 0.3s;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #475569;
+            cursor: not-allowed;
+        }
+
+        /* Question Card Styling */
+        .question { 
+            margin-bottom: 20px; 
+            padding: 20px; 
+            background: var(--card); 
+            border-radius: 15px; 
+            border: 1px solid #334155;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .answer { 
+            color: var(--success); 
+            font-weight: 600;
+            margin-top: 15px; 
+            padding: 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+        }
+
+        .explanation { 
+            color: var(--text-dim); 
+            font-size: 14px; 
+            margin-top: 10px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .hidden { display: none; }
+
+    </style>
 </head>
-
 <body>
 
 <div class="container">
-  <h2>🧠 AI Aptitude Test (Gemini)</h2>
+    <div class="header-flex">
+        <h2>🤖 AI Aptitude & Technical Test</h2>
+        <div id="timer">Time Remaining: 30:00</div>
+    </div>
 
-  <button onclick="generateQuestions()">Generate Questions</button>
+    <div id="setup-area">
+        <button onclick="generateQuestions()">Generate 30 Questions</button>
+    </div>
 
-  <div id="questions.html">Click button to generate questions...</div>
+    <div id="questions-container">
+        <p style="color: var(--text-dim);">Click the button to generate your assessment...</p>
+    </div>
+
+    <div id="controls" class="pagination hidden">
+        <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+        <span id="pageLabel" style="align-self: center; color: var(--text-dim);">Page 1 of 3</span>
+        <button id="nextBtn" onclick="changePage(1)">Next</button>
+    </div>
 </div>
 
 <script>
-async function generateQuestions() {
-    function displayQuestions(text) {
-  const container = document.getElementById("questions");
+    let allQuestionsHtml = [];
+    let currentPage = 0;
+    const questionsPerPage = 10;
+    let timeLeft = 30 * 60; // 30 minutes in seconds
 
-  // Split AI response into lines
-  const lines = text.split("\n");
+    async function generateQuestions() {
+        const container = document.getElementById("questions-container");
+        container.innerHTML = "<p>Generating 30 custom questions (Aptitude + Technical)... Please wait.</p>";
+        
+        
 
-  let html = "";
+        
+            window.location.href = "questions.html";
 
-  lines.forEach(line => {
-    const lower = line.toLowerCase();
-
-    if (lower.includes("question")) {
-      html += `<div class="question"><b>${line}</b>`;
-    } 
-    else if (lower.includes("answer")) {
-      html += `<div class="answer">${line}</div>`;
-    } 
-    else if (lower.includes("explanation")) {
-      html += `<div class="explanation">${line}</div></div>`;
-    } 
-    else {
-      html += `<p>${line}</p>`;
     }
-  });
+    function processAndDisplay(text) {
+        const lines = text.split("\n");
+        let htmlBlocks = [];
+        let currentBlock = "";
 
-  container.innerHTML = html;
-}
-  const container = document.getElementById("questions");
-  container.innerHTML = "Generating AI questions...";
-
-  try {
-    const response = await fetch(
-      "http://localhost:3000/ask",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          message: "Generate 5 aptitude questions with answers and explanation clearly labeled."
-        })
-      }
-    );
-
-    const data = await response.json();
-
-    console.log(data); // Debug
-
-    if (!data.reply) {
-      container.innerHTML = "Error: " + JSON.stringify(data);
-      return;
+        lines.forEach(line => {
+            const lower = line.toLowerCase();
+            if (lower.includes("question")) {
+                if (currentBlock !== "") htmlBlocks.push(currentBlock + "</div>");
+                currentBlock = `<div class="question"><b>${line}</b>`;
+            } else if (lower.includes("answer")) {
+                currentBlock += `<div class="answer">${line}</div>`;
+            } else if (lower.includes("explanation")) {
+                currentBlock += `<div class="explanation">${line}</div>`;
+            } else if (line.trim() !== "") {
+                currentBlock += `<p>${line}</p>`;
+            }
+        });
+        
+        if (currentBlock !== "") htmlBlocks.push(currentBlock + "</div>");
+        allQuestionsHtml = htmlBlocks;
+        renderPage();
     }
 
-    displayQuestions(data.reply);
+    function renderPage() {
+        const container = document.getElementById("questions-container");
+        const start = currentPage * questionsPerPage;
+        const end = start + questionsPerPage;
+        
+        container.innerHTML = allQuestionsHtml.slice(start, end).join("");
+        
+        document.getElementById("pageLabel").innerText = `Page ${currentPage + 1} of 3`;
+        document.getElementById("prevBtn").disabled = currentPage === 0;
+        document.getElementById("nextBtn").disabled = (currentPage + 1) * questionsPerPage >= allQuestionsHtml.length;
+    }
 
-  } catch (error) {
-    container.innerHTML = "Error: " + error.message;
-  }
-}
-  window.location.href = "questions.html";
+    function changePage(direction) {
+        currentPage += direction;
+        renderPage();
+        window.scrollTo(0, 0);
+    }
+
+    function startTimer() {
+        const timerEl = document.getElementById("timer");
+        const interval = setInterval(() => {
+            timeLeft--;
+            let mins = Math.floor(timeLeft / 60);
+            let secs = timeLeft % 60;
+            timerEl.innerText = `Time Remaining: ${mins}:${secs < 10 ? '0' + secs : secs}`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                alert("Time is up! Submitting your test.");
+            }
+        }, 1000);
+    }
 </script>
 </body>
 </html>

@@ -1,211 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Aptitude MCQ Test</title>
-  <style>
-    body { font-family: Poppins; background: #f5f6fa; padding: 20px; }
-    .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 12px; }
-    .question { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; }
-    button { background: #6c5ce7; color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
-    .correct { color: green; }
-    .wrong { color: red; }
-  </style>
-</head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InterviewAI | Professional Assessment</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b1120; --sidebar: #161e2d; --accent: #38bdf8;
+            --card: #1e293b; --text-main: #f1f5f9; --text-dim: #94a3b8;
+            --success: #10b981; --danger: #f43f5e;
+        }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background: var(--bg); color: var(--text-main); padding: 40px 20px; }
+
+        .container { max-width: 900px; margin: auto; background: var(--sidebar); padding: 30px; border-radius: 20px; border: 1px solid #2d3748; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        
+        .header-flex { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #2d3748; padding-bottom: 20px; margin-bottom: 30px; }
+        h2 { color: var(--accent); }
+        #timer { font-size: 1.2rem; font-weight: 600; padding: 8px 15px; background: rgba(56, 189, 248, 0.1); border-radius: 8px; border: 1px solid var(--accent); transition: 0.3s; }
+
+        .question-card { background: var(--card); padding: 25px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; transition: 0.3s; }
+        .question-card:hover { border-color: var(--accent); }
+        .question-text { font-size: 1.1rem; margin-bottom: 15px; font-weight: 500; }
+
+        .option-label { display: block; padding: 12px 15px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .option-label:hover { background: #1e293b; border-color: var(--accent); }
+        input[type="radio"] { margin-right: 10px; accent-color: var(--accent); }
+
+        .controls { display: flex; justify-content: center; gap: 15px; margin-top: 30px; align-items: center; }
+        button { padding: 12px 25px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: 0.3s; background: var(--accent); color: var(--bg); }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        button:disabled { background: #475569; cursor: not-allowed; transform: none; }
+        
+        #submitBtn { background: var(--success); color: white; }
+        #result { text-align: center; font-size: 1.5rem; margin-top: 20px; color: var(--accent); }
+        
+        .feedback { margin-top: 15px; padding: 10px; border-radius: 8px; font-size: 0.9rem; display: none; }
+        .correct { background: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .wrong { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+        .hidden { display: none; }
+    </style>
+</head>
 <body>
 
 <div class="container">
-  <h2>🧠 Aptitude MCQ Test</h2>
+    <div class="header-flex">
+        <h2>🧠 Aptitude & Tech Test</h2>
+        <div id="timer">Time Left: 30:00</div>
+    </div>
 
-  <button onclick="generateTest()">Generate Test</button>
+    <div id="quizForm"></div>
 
+    <div class="controls">
+        <button id="prevBtn" onclick="changePage(-1)">Previous</button>
+        <span id="pageIndicator" style="color: var(--text-dim)">Page 1 of 3</span>
+        <button id="nextBtn" onclick="changePage(1)">Next</button>
+        <button id="submitBtn" class="hidden" onclick="submitTest()">Final Submit</button>
+    </div>
 
-  <form id="quizForm"></form>
-  <h3 id="timer">Time Left: 30s</h3>
-
-  <button onclick="submitTest()">Submit</button>
-  <button onclick="nextQuestion()">Next</button>
-
-  <h3 id="result"></h3>
+    <h3 id="result"></h3>
 </div>
 
 <script>
-// 📚 Question Bank (AI-like)
-let timeLeft = 30; // seconds
-let timerInterval; // 30 sec
 const questionBank = [
-  {
-    question: "What is 15 × 3?",
-    options: ["30", "45", "50", "60"],
-    answer: "45",
-    explanation: "15 multiplied by 3 equals 45."
-  },
-  {
-    question: "Next number: 2, 4, 8, 16, ?",
-    options: ["18", "24", "32", "30"],
-    answer: "32",
-    explanation: "Each number doubles → 16 × 2 = 32."
-  },
-  {
-    question: "What is 25% of 200?",
-    options: ["25", "50", "75", "100"],
-    answer: "50",
-    explanation: "25% of 200 = 50."
-  },
-  {
-    question: "Find odd one out: 2, 3, 5, 9, 7",
-    options: ["2", "3", "5", "9"],
-    answer: "9",
-    explanation: "9 is not a prime number."
-  },
-  {
-    question: "What is √81?",
-    options: ["7", "8", "9", "10"],
-    answer: "9",
-    explanation: "Square root of 81 is 9."
-  },
-  {
-    question: "If 5x = 20, what is x?",
-    options: ["2", "3", "4", "5"],
-    answer: "4",
-    explanation: "x = 20 ÷ 5 = 4."
-  },
-  // 🧮 Math
-  { question: "What is 12 × 8?", options: ["96", "88", "108", "92"], answer: "96", explanation: "12 × 8 = 96." },
-  { question: "What is 20% of 150?", options: ["20", "25", "30", "35"], answer: "30", explanation: "20% of 150 = 30." },
-  { question: "√144 = ?", options: ["10", "11", "12", "13"], answer: "12", explanation: "Square root of 144 is 12." },
-  { question: "15² = ?", options: ["225", "215", "205", "235"], answer: "225", explanation: "15 × 15 = 225." },
+    // 🧮 APTITUDE (1-15)
+    { q: "What is 15 × 3?", o: ["30", "45", "50", "60"], a: "45", e: "15*3 = 45." },
+    { q: "Next number: 2, 4, 8, 16, ?", o: ["18", "24", "32", "30"], a: "32", e: "Doubling series." },
+    { q: "What is 25% of 200?", o: ["25", "50", "75", "100"], a: "50", e: "0.25 * 200 = 50." },
+    { q: "Find odd one: 2, 3, 5, 9, 7", o: ["2", "3", "5", "9"], a: "9", e: "9 is not prime." },
+    { q: "√144 = ?", o: ["10", "11", "12", "13"], a: "12", e: "12*12 = 144." },
+    { q: "Speed 60km/h, Time 2h. Distance?", o: ["100", "110", "120", "130"], a: "120", e: "60*2 = 120." },
+    { q: "If CAT=24, DOG=?", o: ["24", "26", "28", "30"], a: "26", e: "D(4)+O(15)+G(7) = 26." },
+    { q: "Ratio 2:3, Total 50. First part?", o: ["20", "25", "30", "35"], a: "20", e: "2/5 * 50 = 20." },
+    { q: "Next: 1, 4, 9, 16, ?", o: ["20", "24", "25", "30"], a: "25", e: "Perfect squares." },
+    { q: "Profit on 100 sold at 120?", o: ["10%", "15%", "20%", "25%"], a: "20%", e: "20/100 = 20%." },
+    { q: "3 cats catch 3 rats in 3 min. 1 cat catches 1 rat in?", o: ["1 min", "2 min", "3 min", "4 min"], a: "3 min", e: "Independent workers." },
+    { q: "100 ÷ 4 = ?", o: ["20", "25", "30", "35"], a: "25", e: "100/4 = 25." },
+    { q: "What is 12 × 8?", o: ["96", "88", "108", "92"], a: "96", e: "12*8 = 96." },
+    { q: "Cube of 3?", o: ["9", "18", "27", "81"], a: "27", e: "3*3*3 = 27." },
+    { q: "If 5x=20, x=?", o: ["2", "3", "4", "5"], a: "4", e: "20/5 = 4." },
 
-  // 🔢 Series
-  { question: "2, 6, 12, 20, ?", options: ["28", "30", "32", "26"], answer: "30", explanation: "Pattern: +4, +6, +8, +10." },
-  { question: "5, 10, 20, 40, ?", options: ["60", "70", "80", "90"], answer: "80", explanation: "Each number doubles." },
-  { question: "1, 4, 9, 16, ?", options: ["20", "24", "25", "30"], answer: "25", explanation: "Squares: 1², 2², 3², 4², 5²." },
-
-  // 🧠 Logic
-  { question: "Find odd one: 2, 3, 5, 7, 9", options: ["2", "3", "7", "9"], answer: "9", explanation: "9 is not prime." },
-  { question: "If CAT = 24, DOG = ?", options: ["26", "28", "30", "32"], answer: "26", explanation: "C=3,A=1,T=20 → sum=24; D=4,O=15,G=7 → 26." },
-  { question: "Clock shows 3:15. Angle?", options: ["0°", "7.5°", "15°", "30°"], answer: "7.5°", explanation: "Hour hand moves slightly → 7.5° difference." },
-
-  // 📊 Percentage & Profit
-  { question: "Cost price = 100, selling price = 120. Profit %?", options: ["10%", "15%", "20%", "25%"], answer: "20%", explanation: "Profit = 20 → 20%." },
-  { question: "Discount of 10% on 500?", options: ["40", "50", "60", "70"], answer: "50", explanation: "10% of 500 = 50." },
-
-  // ⏱ Time & Work
-  { question: "If A completes work in 10 days, 1 day work?", options: ["1/5", "1/10", "1/15", "1/20"], answer: "1/10", explanation: "Work rate = 1/10 per day." },
-  { question: "A & B together = 5 days. Total work/day?", options: ["1/3", "1/4", "1/5", "1/6"], answer: "1/5", explanation: "Work = 1/5 per day." },
-
-  // 🚆 Time & Distance
-  { question: "Speed = 60 km/h, time = 2h. Distance?", options: ["100", "110", "120", "130"], answer: "120", explanation: "Distance = speed × time." },
-  { question: "Distance = 150km, speed = 50 km/h. Time?", options: ["2h", "3h", "4h", "5h"], answer: "3h", explanation: "Time = distance ÷ speed." },
-
-  // 🔤 Coding/Reasoning
-  { question: "A=1, B=2… Z=26. What is SUM?", options: ["55", "56", "57", "58"], answer: "57", explanation: "S(19)+U(21)+M(13)=53? Actually 19+21+13=53 (correct answer ideally 53)." },
-
-  // 🧩 Puzzle
-  { question: "If 3 cats catch 3 rats in 3 min, 1 cat catches 1 rat in?", options: ["1 min", "2 min", "3 min", "4 min"], answer: "3 min", explanation: "Each cat works independently." },
-
-  // 🔢 Simplification
-  { question: "25 × 4 + 10 = ?", options: ["90", "100", "110", "120"], answer: "110", explanation: "100 + 10 = 110." },
-  { question: "50 ÷ 5 × 2 = ?", options: ["10", "15", "20", "25"], answer: "20", explanation: "Follow left to right." },
-
-  // 🧮 Ratio
-  { question: "Ratio 2:3, total 50 → first part?", options: ["20", "25", "30", "35"], answer: "20", explanation: "2/5 × 50 = 20." },
-
-  // 🔥 More
-  { question: "Cube of 3?", options: ["6", "9", "27", "81"], answer: "27", explanation: "3³ = 27." },
-  { question: "100 ÷ 4 = ?", options: ["20", "25", "30", "35"], answer: "25", explanation: "100 ÷ 4 = 25." },
-  { question: "Next: 3, 9, 27, ?", options: ["54", "81", "72", "90"], answer: "81", explanation: "Multiply by 3." }
+    // 💻 TECHNICAL (AIML/WEB) (16-30)
+    { q: "Which HTML tag is used for JavaScript?", o: ["<js>", "<scripting>", "<script>", "<javascript>"], a: "<script>", e: "Standard tag." },
+    { q: "What does 'ML' stand for?", o: ["Manual Learning", "Machine Learning", "Main Logic", "Meta Layer"], a: "Machine Learning", e: "Core AI field." },
+    { q: "React is a library for?", o: ["Backend", "Frontend", "Database", "OS"], a: "Frontend", e: "Developed by Meta." },
+    { q: "Supervised Learning requires?", o: ["No Data", "Unlabeled Data", "Labeled Data", "Random Data"], a: "Labeled Data", e: "Needs target labels." },
+    { q: "Which CSS property changes text color?", o: ["font-style", "text-color", "color", "background"], a: "color", e: "Basic CSS." },
+    { q: "In Python, which keyword defines a function?", o: ["func", "define", "def", "function"], a: "def", e: "Short for define." },
+    { q: "Which layer handles pixel data in AI?", o: ["Dense", "Dropout", "Convolutional", "Recurrent"], a: "Convolutional", e: "CNNs for images." },
+    { q: "What is 'NaN' in JavaScript?", o: ["Not a Number", "New and Next", "No available Node", "Null and None"], a: "Not a Number", e: "Numeric data type." },
+    { q: "Which is a NoSQL database?", o: ["MySQL", "PostgreSQL", "MongoDB", "Oracle"], a: "MongoDB", e: "Document based." },
+    { q: "Overfitting means?", o: ["Good performance", "High bias", "High variance", "Low accuracy"], a: "High variance", e: "Model learns noise." },
+    { q: "Git is a?", o: ["Language", "Version Control", "IDE", "Server"], a: "Version Control", e: "Created by Linus Torvalds." },
+    { q: "What is the result of 2 + '2' in JS?", o: ["4", "'22'", "'4'", "Error"], a: "'22'", e: "Type coercion." },
+    { q: "API stands for?", o: ["App Program Interface", "Auto Power In", "Advanced Proto Info", "All Point Input"], a: "App Program Interface", e: "Software connector." },
+    { q: "Standard activation function in Hidden layers?", o: ["Step", "Sigmoid", "ReLU", "Linear"], a: "ReLU", e: "Rectified Linear Unit." },
+    { q: "Main goal of HTML?", o: ["Styling", "Logic", "Structure", "Database"], a: "Structure", e: "Standard markup." }
 ];
 
-let questions = [];
-setTimeout(() => submitTest(), 30000); // 30 sec
-// 🎲 Generate Random Test
-function generateTest() {
-  questions = questionBank.sort(() => 0.5 - Math.random()).slice(0, 5);
-  renderQuestions();
-  startTimer(); // 👈 ADD THIS
-}
+let currentPage = 0;
+const qPerPage = 10;
+let userAnswers = Array(30).fill(null);
+let timeLeft = 30 * 60; // 30 minutes
+
 function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = 30;
-
-  timerInterval = setInterval(() => {
-
-    const timerElement = document.getElementById("timer");
-
-    timerElement.innerText = `Time Left: ${timeLeft}s`;
-
-    // 🔴 ADD THIS HERE
-    if (timeLeft <= 10) {
-      timerElement.style.color = "red";
-    }
-
-    timeLeft--;
-
-    if (timeLeft < 0) {
-      clearInterval(timerInterval);
-      alert("⏰ Time's up!");
-      submitTest();
-    }
-
-  }, 1000);
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        let mins = Math.floor(timeLeft / 60);
+        let secs = timeLeft % 60;
+        const timerEl = document.getElementById("timer");
+        timerEl.innerText = `Time Left: ${mins}:${secs < 10 ? '0'+secs : secs}`;
+        
+        if (timeLeft <= 300) timerEl.style.color = "var(--danger)";
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitTest();
+        }
+    }, 1000);
 }
 
-// 🎨 Render UI
-function renderQuestions() {
-  const form = document.getElementById("quizForm");
-  form.innerHTML = "";
+function renderPage() {
+    const form = document.getElementById("quizForm");
+    form.innerHTML = "";
+    const start = currentPage * qPerPage;
+    const end = start + qPerPage;
 
-  questions.forEach((q, i) => {
-    let html = `<div class="question">
-      <p><b>Q${i+1}. ${q.question}</b></p>`;
+    questionBank.slice(start, end).forEach((q, i) => {
+        const qIndex = start + i;
+        let html = `<div class="question-card">
+            <p class="question-text"><b>Q${qIndex + 1}. ${q.q}</b></p>`;
 
-    q.options.forEach(opt => {
-      html += `
-        <label>
-          <input type="radio" name="q${i}" value="${opt}">
-          ${opt}
-        </label><br>`;
+        q.o.forEach(opt => {
+            const checked = userAnswers[qIndex] === opt ? "checked" : "";
+            html += `
+                <label class="option-label">
+                    <input type="radio" name="q${qIndex}" value="${opt}" ${checked} onchange="saveAnswer(${qIndex}, '${opt}')">
+                    ${opt}
+                </label>`;
+        });
+
+        html += `<div id="feedback${qIndex}" class="feedback"></div></div>`;
+        form.innerHTML += html;
     });
 
-    html += `<div id="feedback${i}"></div></div>`;
-    form.innerHTML += html;
-  });
+    document.getElementById("pageIndicator").innerText = `Page ${currentPage + 1} of 3`;
+    document.getElementById("prevBtn").disabled = currentPage === 0;
+    document.getElementById("nextBtn").classList.toggle("hidden", currentPage === 2);
+    document.getElementById("submitBtn").classList.toggle("hidden", currentPage !== 2);
 }
 
-// 🧮 Auto Scoring
+function saveAnswer(index, val) { userAnswers[index] = val; }
+
+function changePage(step) {
+    currentPage += step;
+    renderPage();
+    window.scrollTo(0,0);
+}
+
 function submitTest() {
-  clearInterval(timerInterval); // stop timer
+    let score = 0;
+    questionBank.forEach((q, i) => {
+        const feedback = document.getElementById(`feedback${i}`);
+        const isCorrect = userAnswers[i] === q.a;
+        if (isCorrect) score++;
 
-  let score = 0;
+        if (feedback) {
+            feedback.style.display = "block";
+            feedback.className = `feedback ${isCorrect ? 'correct' : 'wrong'}`;
+            feedback.innerHTML = isCorrect ? `✔ Correct!` : `✖ Wrong. Correct: ${q.a} <br> ${q.e}`;
+        }
+    });
 
-  questions.forEach((q, i) => {
-    const selected = document.querySelector(`input[name="q${i}"]:checked`);
-    const feedback = document.getElementById(`feedback${i}`);
-
-    if (!selected) {
-      feedback.innerHTML = `<p class="wrong">Not answered</p>`;
-      return;
-    }
-
-    if (selected.value === q.answer) {
-      score++;
-      feedback.innerHTML = `<p class="correct">✔ Correct</p>`;
-    } else {
-      feedback.innerHTML = `
-        <p class="wrong">✖ Wrong</p>
-        <p>Correct: ${q.answer}</p>
-        <p>${q.explanation}</p>
-      `;
-    }
-  });
-
-  document.getElementById("result").innerText =
-    `Score: ${score} / ${questions.length}`;
+    document.getElementById("result").innerText = `Final Score: ${score} / 30`;
+    document.getElementById("submitBtn").disabled = true;
+    alert(`Test Submitted! Your Score: ${score}/30`);
 }
-if (timeLeft <= 10) {
-  document.getElementById("timer").style.color = "red";
-}
+
+// Init
+window.onload = () => {
+    renderPage();
+    startTimer();
+};
 </script>
 
 </body>

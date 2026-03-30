@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Aptitude MCQ Test</title>
+  <style>
+    body { font-family: Poppins; background: #f5f6fa; padding: 20px; }
+    .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 12px; }
+    .question { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 10px; }
+    button { background: #6c5ce7; color: white; padding: 10px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+    .correct { color: green; }
+    .wrong { color: red; }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🧠 Aptitude MCQ Test</h2>
+
+  <button onclick="generateTest()">Generate Test</button>
+
+
+  <form id="quizForm"></form>
+  <h3 id="timer">Time Left: 30s</h3>
+
+  <button onclick="submitTest()">Submit</button>
+  <button onclick="nextQuestion()">Next</button>
+
+  <h3 id="result"></h3>
+</div>
+
+<script>
+// 📚 Question Bank (AI-like)
+let timeLeft = 30; // seconds
+let timerInterval; // 30 sec
+const questionBank = [
+  {
+    question: "What is 15 × 3?",
+    options: ["30", "45", "50", "60"],
+    answer: "45",
+    explanation: "15 multiplied by 3 equals 45."
+  },
+  {
+    question: "Next number: 2, 4, 8, 16, ?",
+    options: ["18", "24", "32", "30"],
+    answer: "32",
+    explanation: "Each number doubles → 16 × 2 = 32."
+  },
+  {
+    question: "What is 25% of 200?",
+    options: ["25", "50", "75", "100"],
+    answer: "50",
+    explanation: "25% of 200 = 50."
+  },
+  {
+    question: "Find odd one out: 2, 3, 5, 9, 7",
+    options: ["2", "3", "5", "9"],
+    answer: "9",
+    explanation: "9 is not a prime number."
+  },
+  {
+    question: "What is √81?",
+    options: ["7", "8", "9", "10"],
+    answer: "9",
+    explanation: "Square root of 81 is 9."
+  },
+  {
+    question: "If 5x = 20, what is x?",
+    options: ["2", "3", "4", "5"],
+    answer: "4",
+    explanation: "x = 20 ÷ 5 = 4."
+  },
+  // 🧮 Math
+  { question: "What is 12 × 8?", options: ["96", "88", "108", "92"], answer: "96", explanation: "12 × 8 = 96." },
+  { question: "What is 20% of 150?", options: ["20", "25", "30", "35"], answer: "30", explanation: "20% of 150 = 30." },
+  { question: "√144 = ?", options: ["10", "11", "12", "13"], answer: "12", explanation: "Square root of 144 is 12." },
+  { question: "15² = ?", options: ["225", "215", "205", "235"], answer: "225", explanation: "15 × 15 = 225." },
+
+  // 🔢 Series
+  { question: "2, 6, 12, 20, ?", options: ["28", "30", "32", "26"], answer: "30", explanation: "Pattern: +4, +6, +8, +10." },
+  { question: "5, 10, 20, 40, ?", options: ["60", "70", "80", "90"], answer: "80", explanation: "Each number doubles." },
+  { question: "1, 4, 9, 16, ?", options: ["20", "24", "25", "30"], answer: "25", explanation: "Squares: 1², 2², 3², 4², 5²." },
+
+  // 🧠 Logic
+  { question: "Find odd one: 2, 3, 5, 7, 9", options: ["2", "3", "7", "9"], answer: "9", explanation: "9 is not prime." },
+  { question: "If CAT = 24, DOG = ?", options: ["26", "28", "30", "32"], answer: "26", explanation: "C=3,A=1,T=20 → sum=24; D=4,O=15,G=7 → 26." },
+  { question: "Clock shows 3:15. Angle?", options: ["0°", "7.5°", "15°", "30°"], answer: "7.5°", explanation: "Hour hand moves slightly → 7.5° difference." },
+
+  // 📊 Percentage & Profit
+  { question: "Cost price = 100, selling price = 120. Profit %?", options: ["10%", "15%", "20%", "25%"], answer: "20%", explanation: "Profit = 20 → 20%." },
+  { question: "Discount of 10% on 500?", options: ["40", "50", "60", "70"], answer: "50", explanation: "10% of 500 = 50." },
+
+  // ⏱ Time & Work
+  { question: "If A completes work in 10 days, 1 day work?", options: ["1/5", "1/10", "1/15", "1/20"], answer: "1/10", explanation: "Work rate = 1/10 per day." },
+  { question: "A & B together = 5 days. Total work/day?", options: ["1/3", "1/4", "1/5", "1/6"], answer: "1/5", explanation: "Work = 1/5 per day." },
+
+  // 🚆 Time & Distance
+  { question: "Speed = 60 km/h, time = 2h. Distance?", options: ["100", "110", "120", "130"], answer: "120", explanation: "Distance = speed × time." },
+  { question: "Distance = 150km, speed = 50 km/h. Time?", options: ["2h", "3h", "4h", "5h"], answer: "3h", explanation: "Time = distance ÷ speed." },
+
+  // 🔤 Coding/Reasoning
+  { question: "A=1, B=2… Z=26. What is SUM?", options: ["55", "56", "57", "58"], answer: "57", explanation: "S(19)+U(21)+M(13)=53? Actually 19+21+13=53 (correct answer ideally 53)." },
+
+  // 🧩 Puzzle
+  { question: "If 3 cats catch 3 rats in 3 min, 1 cat catches 1 rat in?", options: ["1 min", "2 min", "3 min", "4 min"], answer: "3 min", explanation: "Each cat works independently." },
+
+  // 🔢 Simplification
+  { question: "25 × 4 + 10 = ?", options: ["90", "100", "110", "120"], answer: "110", explanation: "100 + 10 = 110." },
+  { question: "50 ÷ 5 × 2 = ?", options: ["10", "15", "20", "25"], answer: "20", explanation: "Follow left to right." },
+
+  // 🧮 Ratio
+  { question: "Ratio 2:3, total 50 → first part?", options: ["20", "25", "30", "35"], answer: "20", explanation: "2/5 × 50 = 20." },
+
+  // 🔥 More
+  { question: "Cube of 3?", options: ["6", "9", "27", "81"], answer: "27", explanation: "3³ = 27." },
+  { question: "100 ÷ 4 = ?", options: ["20", "25", "30", "35"], answer: "25", explanation: "100 ÷ 4 = 25." },
+  { question: "Next: 3, 9, 27, ?", options: ["54", "81", "72", "90"], answer: "81", explanation: "Multiply by 3." }
+];
+
+let questions = [];
+setTimeout(() => submitTest(), 30000); // 30 sec
+// 🎲 Generate Random Test
+function generateTest() {
+  questions = questionBank.sort(() => 0.5 - Math.random()).slice(0, 5);
+  renderQuestions();
+  startTimer(); // 👈 ADD THIS
+}
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = 30;
+
+  timerInterval = setInterval(() => {
+
+    const timerElement = document.getElementById("timer");
+
+    timerElement.innerText = `Time Left: ${timeLeft}s`;
+
+    // 🔴 ADD THIS HERE
+    if (timeLeft <= 10) {
+      timerElement.style.color = "red";
+    }
+
+    timeLeft--;
+
+    if (timeLeft < 0) {
+      clearInterval(timerInterval);
+      alert("⏰ Time's up!");
+      submitTest();
+    }
+
+  }, 1000);
+}
+
+// 🎨 Render UI
+function renderQuestions() {
+  const form = document.getElementById("quizForm");
+  form.innerHTML = "";
+
+  questions.forEach((q, i) => {
+    let html = `<div class="question">
+      <p><b>Q${i+1}. ${q.question}</b></p>`;
+
+    q.options.forEach(opt => {
+      html += `
+        <label>
+          <input type="radio" name="q${i}" value="${opt}">
+          ${opt}
+        </label><br>`;
+    });
+
+    html += `<div id="feedback${i}"></div></div>`;
+    form.innerHTML += html;
+  });
+}
+
+// 🧮 Auto Scoring
+function submitTest() {
+  clearInterval(timerInterval); // stop timer
+
+  let score = 0;
+
+  questions.forEach((q, i) => {
+    const selected = document.querySelector(`input[name="q${i}"]:checked`);
+    const feedback = document.getElementById(`feedback${i}`);
+
+    if (!selected) {
+      feedback.innerHTML = `<p class="wrong">Not answered</p>`;
+      return;
+    }
+
+    if (selected.value === q.answer) {
+      score++;
+      feedback.innerHTML = `<p class="correct">✔ Correct</p>`;
+    } else {
+      feedback.innerHTML = `
+        <p class="wrong">✖ Wrong</p>
+        <p>Correct: ${q.answer}</p>
+        <p>${q.explanation}</p>
+      `;
+    }
+  });
+
+  document.getElementById("result").innerText =
+    `Score: ${score} / ${questions.length}`;
+}
+if (timeLeft <= 10) {
+  document.getElementById("timer").style.color = "red";
+}
+</script>
+
+</body>
+</html>

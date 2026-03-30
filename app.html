@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>AI Interviewer</h2>
+    <button onclick="startInerview()">Start Speaking</button>
+    <p id="status">Click to talk...</p>
+    <div id="results"></div>
+
+    <script>
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        
+        function startInerview() {
+            recognition.start();
+            document.getElementById('status').innerText = "Listening...";
+        }
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('status').innerText = "Analyzed: " + transcript;
+            
+            // Send to your Python Backend
+            fetch('/analyze', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    question: "Explain what a Linked List is.",
+                    answer: transcript
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('results').innerHTML = `
+                    <p><b>Confidence:</b> ${data.confidence}%</p>
+                    <p><b>AI Feedback:</b> ${data.ai_analysis}</p>
+                `;
+            });
+        };
+    </script>
+</body>
+</html>

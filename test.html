@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Test AI API</h2>
+
+<input id="input" placeholder="Ask something..." />
+<button onclick="askAI()">Ask AI</button>
+
+<p id="output"></p>
+
+<script>
+async function askAI() {
+      alert("Button clicked ✅");  
+  const userInput = document.getElementById("input").value;
+
+  console.log("Sending:", userInput);
+
+  try {
+    const response = await fetch("http://localhost:3000/ask", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message: userInput })
+    });
+
+    const data = await response.json();
+
+    console.log("Response:", data);
+
+    document.getElementById("output").innerText = data.reply;
+
+  } catch (err) {
+    console.log("ERROR:", err);
+    document.getElementById("output").innerText = "❌ Connection error";
+  }
+}
+</script>
+
+</body>
+</html>

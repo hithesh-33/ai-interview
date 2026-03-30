@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Aptitude Test</title>
+  <style>
+    body {
+      font-family: Poppins;
+      background: #f5f6fa;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    button {
+      background: #6c5ce7;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .question {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 10px;
+    }
+
+    .answer {
+      color: green;
+      margin-top: 10px;
+    }
+
+    .explanation {
+      color: #555;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🧠 AI Aptitude Test (Gemini)</h2>
+
+  <button onclick="generateQuestions()">Generate Questions</button>
+
+  <div id="questions.html">Click button to generate questions...</div>
+</div>
+
+<script>
+async function generateQuestions() {
+    function displayQuestions(text) {
+  const container = document.getElementById("questions");
+
+  // Split AI response into lines
+  const lines = text.split("\n");
+
+  let html = "";
+
+  lines.forEach(line => {
+    const lower = line.toLowerCase();
+
+    if (lower.includes("question")) {
+      html += `<div class="question"><b>${line}</b>`;
+    } 
+    else if (lower.includes("answer")) {
+      html += `<div class="answer">${line}</div>`;
+    } 
+    else if (lower.includes("explanation")) {
+      html += `<div class="explanation">${line}</div></div>`;
+    } 
+    else {
+      html += `<p>${line}</p>`;
+    }
+  });
+
+  container.innerHTML = html;
+}
+  const container = document.getElementById("questions");
+  container.innerHTML = "Generating AI questions...";
+
+  try {
+    const response = await fetch(
+      "http://localhost:3000/ask",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          message: "Generate 5 aptitude questions with answers and explanation clearly labeled."
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    console.log(data); // Debug
+
+    if (!data.reply) {
+      container.innerHTML = "Error: " + JSON.stringify(data);
+      return;
+    }
+
+    displayQuestions(data.reply);
+
+  } catch (error) {
+    container.innerHTML = "Error: " + error.message;
+  }
+}
+  window.location.href = "questions.html";
+</script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  display: flex;
+  background: #f5f6fa;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  height: 100vh;
+  background: #111;
+  color: #fff;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.logo {
+  margin-bottom: 30px;
+}
+
+.sidebar ul {
+  list-style: none;
+}
+
+.sidebar ul li {
+  padding: 12px;
+  margin: 8px 0;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.sidebar ul li:hover,
+.sidebar ul .active {
+  background: #6c5ce7;
+}
+
+.logout {
+  padding: 10px;
+  border: none;
+  background: #222;
+  color: #fff;
+  border-radius: 8px;
+}
+
+/* Main */
+.main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Topbar */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile img {
+  border-radius: 50%;
+}
+
+/* Content Layout */
+.content {
+  display: flex;
+  gap: 20px;
+}
+
+/* Video Card */
+.video-card {
+  flex: 2;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  position: relative;
+}
+
+.video {
+  width: 100%;
+  border-radius: 10px;
+}
+
+/* Controls */
+.controls {
+  position: absolute;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.controls button {
+  margin: 0 5px;
+  padding: 10px;
+  border-radius: 50%;
+  border: none;
+  background: #eee;
+  cursor: pointer;
+}
+
+.controls .end {
+  background: red;
+  color: white;
+}
+
+/* Right Panel */
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Score Cards */
+.score-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+}
+
+.score {
+  font-size: 24px;
+  color: #6c5ce7;
+}
+
+.score.orange {
+  color: orange;
+}
+
+/* Chat */
+.chat-box {
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.user {
+  text-align: right;
+  color: #6c5ce7;
+}
+
+.chat-box input {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}

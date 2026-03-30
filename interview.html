@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Interview Confidence Checker</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; text-align: center; padding: 50px; }
+        .container { background: #1e1e1e; padding: 30px; border-radius: 15px; display: inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        button { background: #007bff; color: white; border: none; padding: 15px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 20px; }
+        button:disabled { background: #555; }
+        #transcript { margin-top: 20px; font-style: italic; color: #aaa; }
+        .score-box { font-size: 24px; font-weight: bold; margin-top: 20px; color: #4caf50; }
+        .fillers { color: #ff5252; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>AI Interviewer</h2>
+    <p>Question: "Tell me about your latest AIML project."</p>
+    
+    <button id="start-btn">Start Speaking</button>
+    
+    <div id="transcript">Your answer will appear here...</div>
+    <div id="score" class="score-box"></div>
+    <div id="details" class="fillers"></div>
+</div>
+
+<script>
+    const startBtn = document.getElementById('start-btn');
+    const transcriptDiv = document.getElementById('transcript');
+    const scoreDiv = document.getElementById('score');
+    const detailsDiv = document.getElementById('details');
+
+    // Initialize Speech Recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+
+    startBtn.onclick = () => {
+        recognition.start();
+        startBtn.disabled = true;
+        startBtn.innerText = "Listening...";
+    };
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        transcriptDiv.innerText = `"${transcript}"`;
+        analyzeConfidence(transcript);
+    };
+
+    recognition.onend = () => {
+        startBtn.disabled = false;
+        startBtn.innerText = "Start Speaking";
+    };
+
+    function analyzeConfidence(text) {
+        const fillers = ['um', 'uh', 'like', 'maybe', 'i think', 'actually', 'sort of'];
+        const words = text.toLowerCase().split(' ');
+        
+        // Find filler words used
+        let foundFillers = words.filter(word => fillers.includes(word));
+        
+        // Calculate Score (Start at 100, deduct 10 per filler)
+        let score = 100 - (foundFillers.length * 10);
+        score = Math.max(0, score); // Don't go below 0
+
+        // Display results
+        scoreDiv.innerText = `Confidence Score: ${score}/100`;
+        detailsDiv.innerText = foundFillers.length > 0 
+            ? `Detected fillers: ${foundFillers.join(', ')}` 
+            : "No filler words detected! Great job.";
+    }
+</script>
+
+</body>
+</html>

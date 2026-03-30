@@ -1,0 +1,108 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="page_style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <form class="login_form">
+        <h1 class="login_title">Login</h1>
+
+        <div class="input_box">
+            <i class="fa-solid fa-user"></i>
+            <input type="text" id="email" placeholder="Username">
+        </div>
+
+        <div class="input_box">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="password" placeholder="Password">
+        </div>
+
+        <div class="remember_forget_box">
+            <label for="remember">
+                <input type="checkbox" id="remember">
+                Remember
+            </label>
+            <a href="#">Forgot Password</a>
+        </div>
+
+        <button class="login_btn">Login</button>
+        <p class="register">
+            Don't have an account?
+            <a href="#">Register</a>
+        </p>
+
+        <div class="google_signin_box">
+            <button id="googleSignInBtn">
+                 <i class="fa-brands fa-google"></i> Sign in with Google
+            </button>
+        </div>
+
+        
+        <div class="messege_box"></div>
+
+    </form>
+
+   <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+
+    // REPLACE THIS WITH YOUR ACTUAL FIREBASE CONFIG
+    const firebaseConfig = {
+    apiKey: "AIzaSyBnDGk8aM_TTN3jgGJv1GgYFVXSyX3Ei2I",
+    authDomain: "new-app-faeb5.firebaseapp.com",
+    projectId: "new-app-faeb5",
+    storageBucket: "new-app-faeb5.firebasestorage.app",
+    messagingSenderId: "228503835659",
+    appId: "1:228503835659:web:c91d14cf3eaa73bb71e30e",
+    measurementId: "G-BJXM7CSVWZ"
+  };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const btn = document.querySelector(".login_btn");
+    const googleBtn = document.getElementById("googleSignInBtn");
+    const messege = document.querySelector(".messege_box");
+
+    // Google Sign In
+    googleBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        signInWithPopup(auth, provider)
+            .then(() => {
+                window.location.href = "dashboard.html";
+            }).catch((error) => {
+                messege.textContent = "Error: " + error.message;
+                messege.classList.add("error");
+            });
+    });
+
+    // Email/Password Signup
+    btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Since email signup doesn't have a name, we use the email prefix
+                const displayName = email.split('@')[0];
+                return updateProfile(userCredential.user, { displayName: displayName });
+            })
+            .then(() => {
+                window.location.href = "dashboard.html";
+            })
+            .catch((error) => {
+                messege.classList.add("error");
+                if(error.code === "auth/email-already-in-use") messege.textContent = "Email already exists!";
+                else messege.textContent = error.message;
+            });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Pro | Multi-Modal AIML Dashboard</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root { 
+            --bg: #0b0f1a; --card: #161e2d; --accent: #38bdf8; 
+            --danger: #f43f5e; --success: #10b981; --warning: #fbbf24;
+            --text-main: #f1f5f9; --text-sub: #94a3b8;
+        }
+        
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text-main); display: flex; justify-content: center; padding: 20px; margin: 0; }
+        
+        .container { width: 100%; max-width: 1200px; background: var(--card); padding: 2rem; border-radius: 1.5rem; border: 1px solid #2d3748; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        
+        /* Layout Grid */
+        .interview-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 25px; margin-top: 25px; }
+        
+        /* Question Banner */
+        .question-box { background: #1e293b; padding: 20px; border-radius: 1rem; border-left: 5px solid var(--accent); margin-bottom: 25px; min-height: 80px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .question-text { font-size: 1.3rem; font-weight: 600; color: #fff; }
+        .question-status { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; font-weight: bold; margin-bottom: 5px;}
+
+        /* Video Feed and Transcript */
+        .visual-column { display: flex; flex-direction: column; gap: 20px; }
+        .video-container { position: relative; border-radius: 1rem; overflow: hidden; border: 2px solid #2d3748; background: #000; aspect-ratio: 16/9; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); }
+        #video-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); } /* Mirror view */
+        
+        .transcript-box { height: 180px; padding: 1.2rem; background: var(--bg); border-radius: 0.75rem; overflow-y: auto; border: 1px solid #2d3748; font-size: 0.95rem; line-height: 1.6; }
+        .interim { color: #64748b; font-style: italic; }
+        .transcript-prompt { color: var(--text-sub); }
+
+        /* Dashboard and Analytics */
+        .analytics-column { display: flex; flex-direction: column; gap: 20px; }
+        .metric-card { background: #1e293b; padding: 25px; border-radius: 1rem; border: 1px solid #2d3748; text-align: center; }
+        .score-big { font-size: 4.5rem; font-weight: 800; color: var(--accent); line-height: 1; transition: color 0.3s; }
+        .metric-label { font-size: 0.8rem; color: var(--text-sub); text-transform: uppercase; margin-bottom: 5px; }
+        
+        .feedback-area { font-size: 0.85rem; margin-top: 15px; min-height: 35px; color: var(--text-sub); }
+        .fillers-list { color: var(--danger); font-size: 0.8rem; font-weight: bold; min-height: 20px; }
+        
+        /* Chart Container */
+        .chart-container { height: 200px; padding: 15px; background: var(--bg); border-radius: 0.75rem; border: 1px solid #2d3748; }
+        
+        /* Buttons */
+        .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 30px; }
+        button { padding: 1rem; border-radius: 0.75rem; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem;}
+        #start-btn { background: var(--accent); color: var(--bg); }
+        #submit-btn { background: var(--success); color: #fff; display: none; }
+        button:hover { opacity: 0.9; transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        button:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="question-box">
+        <div class="question-status">AI INTERVIEW PRO v1.0</div>
+        <div id="display-question" class="question-text">Press "Start Interview" to generate your first technical question...</div>
+    </div>
+
+    <div class="interview-grid">
+        <div class="visual-column">
+            <div class="video-container">
+                <video id="video-feed" autoplay playsinline muted></video>
+            </div>
+            <div class="transcript-box" id="output">
+                <span id="final-text" class="transcript-prompt">Your real-time transcription will appear here...</span>
+                <span id="interim-text" class="interim"></span>
+            </div>
+        </div>
+
+        <div class="analytics-column">
+            <div class="metric-card">
+                <div class="metric-label">LIVE CONFIDENCE LEVEL</div>
+                <div class="score-big" id="score">100%</div>
+                <div id="status-ui" style="color: var(--accent); font-weight: bold; font-size: 0.8rem; margin-top: 5px;">Ready</div>
+                <div id="feedback" class="feedback-area">STANDING BY...</div>
+                <div id="fillers" class="fillers-list"></div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="confidenceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="start-btn">START INTERVIEW SESSION</button>
+        <button id="submit-btn">SUBMIT RECORD TO DASHBOARD</button>
+    </div>
+</div>
+
+<script>
+    // --- Configuration & Initialization ---
+    const startBtn = document.getElementById('start-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    const questionDisplay = document.getElementById('display-question');
+    const video = document.getElementById('video-feed');
+    const finalText = document.getElementById('final-text');
+    const interimText = document.getElementById('interim-text');
+    const scoreDisplay = document.getElementById('score');
+    const fillersDisplay = document.getElementById('fillers');
+    const feedbackArea = document.getElementById('feedback');
+    const statusUi = document.getElementById('status-ui');
+
+    let isRecording = false;
+    let videoStream = null;
+    let currentScore = 100;
+    
+    // AIML Project Question Bank
+    const questions = [
+        "Explain the fundamental difference between supervised and unsupervised learning.",
+        "What is the 'Bias-Variance Tradeoff' in machine learning and how do you find the balance?",
+        "Describe a real-world scenario where you would use a decision tree classifier.",
+        "How would you handle missing data in a large machine learning dataset?",
+        "Explain the concept of 'p-value' to someone who has no statistics background.",
+        "What is gradient descent and why is it used in deep learning optimization?"
+    ];
+
+    // --- Chart.js Setup ---
+    const ctx = document.getElementById('confidenceChart').getContext('2d');
+    const confidenceData = {
+        labels: [],
+        datasets: [{
+            label: 'Live Confidence %',
+            data: [],
+            borderColor: '#38bdf8', // var(--accent)
+            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true,
+            pointRadius: 0
+        }]
+    };
+
+    const chartConfig = {
+        type: 'line',
+        data: confidenceData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 0 }, // Instant update
+            scales: {
+                x: { display: false },
+                y: { min: 0, max: 100, ticks: { color: '#94a3b8' }, grid: { color: '#2d3748' } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    };
+    const confidenceChart = new Chart(ctx, chartConfig);
+
+    // Update Chart Logic
+    let chartSecond = 0;
+    function updateChart(score) {
+        chartSecond++;
+        confidenceData.labels.push(chartSecond);
+        confidenceData.datasets[0].data.push(score);
+        
+        // Dynamically change chart color based on score
+        if (score < 40) {
+            confidenceData.datasets[0].borderColor = '#f43f5e'; // var(--danger)
+        } else if (score < 70) {
+            confidenceData.datasets[0].borderColor = '#fbbf24'; // var(--warning)
+        } else {
+            confidenceData.datasets[0].borderColor = '#38bdf8'; // var(--accent)
+        }
+
+        // Limit the number of points shown to prevent clutter
+        if (confidenceData.labels.length > 50) {
+            confidenceData.labels.shift();
+            confidenceData.datasets[0].data.shift();
+        }
+        confidenceChart.update();
+    }
+
+    // --- Audio Logic: Speech-to-Text & Text-to-Speech ---
+    
+    // 1. Text-to-Speech (AI Voice Reads Question)
+    function readQuestionAloud(text) {
+        // Cancel any existing speech
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.95; // Professional, slightly slower pace
+        utterance.pitch = 1.0;
+        
+        // Find a professional voice if possible (browser dependent)
+        const voices = window.speechSynthesis.getVoices();
+        const preferredVoice = voices.find(voice => voice.name.includes("Google US English")) || voices[0];
+        if (preferredVoice) utterance.voice = preferredVoice;
+
+        window.speechSynthesis.speak(utterance);
+    }
+
+    // 2. Speech-to-Text (Transcribes User Answer)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            const result = event.results[i];
+            if (result.isFinal) {
+                finalText.innerHTML += result[0].transcript + " ";
+            } else {
+                interimTranscript += result[0].transcript;
+            }
+        }
+        interimText.innerHTML = interimTranscript;
+        analyzeConfidence(finalText.innerText + interimTranscript);
+    };
+
+    recognition.onerror = (e) => {
+        statusUi.innerText = "Error: " + e.error;
+        statusUi.style.color = "var(--danger)";
+    };
+
+    // --- Core Logic: Analytics & Scoring ---
+    
+    function analyzeConfidence(text) {
+        const fillers = ['um', 'uh', 'like', 'actually', 'basically', 'maybe', 'i think', 'sort of', 'really', 'just'];
+        const words = text.toLowerCase().split(/\s+/);
+        
+        // Frequency Analysis
+        let detected = words.filter(w => fillers.includes(w));
+        let uniqueFound = [...new Set(detected)];
+        
+        // Score Calculation (AIML Student Tip: A simple linear penalty model)
+        currentScore = 100 - (detected.length * 4); 
+        currentScore = Math.max(0, currentScore);
+
+        // Update Dashboard Metrics
+        scoreDisplay.innerText = currentScore + "%";
+        fillersDisplay.innerText = uniqueFound.length > 0 ? "Fillers detected: " + uniqueFound.join(", ") : "";
+        updateChart(currentScore);
+
+        // Update Colors & Feedback
+        if (currentScore > 85) {
+            scoreDisplay.style.color = "var(--success)";
+            feedbackArea.innerText = "Excellent confidence and clarity!";
+        } else if (currentScore > 60) {
+            scoreDisplay.style.color = "var(--accent)";
+            feedbackArea.innerText = "Good, but try to minimize the use of filler words.";
+        } else if (currentScore > 40) {
+            scoreDisplay.style.color = "var(--warning)";
+            feedbackArea.innerText = "Focus on speaking more decisively.";
+        } else {
+            scoreDisplay.style.color = "var(--danger)";
+            feedbackArea.innerText = "Your tone seems hesitant. Practice decisive phrasing.";
+        }
+    }
+
+    // --- Visual Logic: Live Video Stream ---
+    async function startVideoFeed() {
+        try {
+            // Request camera (no audio needed here, speech recognition uses the separate API)
+            videoStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = videoStream;
+        } catch (err) {
+            console.error("Camera Error: ", err);
+            statusUi.innerText = "Error: Camera access required.";
+            statusUi.style.color = "var(--danger)";
+        }
+    }
+
+    // --- Session Control Logic ---
+    function resetSessionMetrics() {
+        // Reset Text
+        finalText.innerHTML = "";
+        interimText.innerHTML = "";
+        
+        // Reset Score & Chart
+        currentScore = 100;
+        scoreDisplay.innerText = "100%";
+        scoreDisplay.style.color = "var(--accent)";
+        fillersDisplay.innerText = "";
+        feedbackArea.innerText = "System analyzing speech...";
+        
+        confidenceData.labels = [];
+        confidenceData.datasets[0].data = [];
+        chartSecond = 0;
+        confidenceChart.update();
+        
+        // Select Random Question
+        const newQuestion = questions[Math.floor(Math.random() * questions.length)];
+        questionDisplay.innerText = newQuestion;
+        
+        // AI reads the question aloud
+        readQuestionAloud(newQuestion);
+    }
+
+    async function startInterview() {
+        resetSessionMetrics();
+        await startVideoFeed();
+        recognition.start();
+
+        isRecording = true;
+        startBtn.innerText = "END SESSION";
+        startBtn.style.background = "var(--danger)";
+        submitBtn.style.display = "none";
+        statusUi.innerText = "🔴 RECORDING LIVE...";
+        statusUi.style.color = "var(--danger)";
+    }
+
+    function endInterview() {
+        recognition.stop();
+        if (videoStream) {
+            videoStream.getTracks().forEach(track => track.stop());
+        }
+        window.speechSynthesis.cancel(); // Stop any reading
+
+        isRecording = false;
+        startBtn.innerText = "RE-TAKE INTERVIEW";
+        startBtn.style.background = "var(--accent)";
+        submitBtn.style.display = "block";
+        statusUi.innerText = "Session Complete";
+        statusUi.style.color = "var(--success)";
+    }
+
+    startBtn.onclick = () => {
+        if (!isRecording) {
+            startInterview();
+        } else {
+            endInterview();
+        }
+    };
+
+    // --- Dashboard Submission Logic ---
+    submitBtn.onclick = () => {
+        // Collect Multi-Modal Session Data
+        const report = {
+            metadata: {
+                studentId: "HK-ENG-2ND-YEAR",
+                timestamp: new Date().toISOString()
+            },
+            interview: {
+                questionText: questionDisplay.innerText,
+                fullAnswer: finalText.innerText.trim(),
+                finalConfidenceScore: currentScore
+            }
+        };
+        
+        // Simulate database submission (e.g., Firebase, MongoDB)
+        console.log("Submitting Multi-Modal Report to Dashboard...", report);
+        alert(`SESSION SUBMITTED!\n\nQuestion: "${report.interview.questionText}"\nScore: ${report.interview.finalConfidenceScore}%`);
+        
+        submitBtn.style.display = "none";
+        statusUi.innerText = "SUBMITTED TO DASHBOARD";
+    };
+    
+    // Ensure voices are loaded (required for TTS on some browsers)
+    window.speechSynthesis.onvoiceschanged = () => {
+        if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+             console.log("Voices loaded.");
+        }
+    };
+
+</script>
+
+</body>
+</html>
